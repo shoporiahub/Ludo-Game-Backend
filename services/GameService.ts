@@ -1,4 +1,4 @@
-import { Game } from "../models/Game";
+import { Game, GameStatus } from "../models/Game";
 import { Player } from "../models/Player";
 import { Token } from "../models/Token";
 import { DiceService } from "./DiceService";
@@ -8,6 +8,8 @@ import { CreateGameDTO } from "../dto/CreateGameDTO";
 import { JoinGameDTO } from "../dto/JoinGameDTO";
 import { MoveTokenDTO } from "../dto/MoveTokenDTO";
 import { RollDiceDTO } from "../dto/RollDiceDTO";
+import { assignColor } from "../utils/color.util";
+import { generateId } from "../utils/IdGenerator";
 
 export class GameService {
   private diceService = new DiceService();
@@ -15,17 +17,29 @@ export class GameService {
 
   /** Create a new game */
   createGame(dto: CreateGameDTO): Game {
-    const game = new Game(dto.createdBy);
+    const game = new Game(generateId("game_"));
+    game.status = GameStatus.WAITING;
+    game.currentTurnIndex = 0;
+    game.players = [];
     Persistence.saveGame(game);
-    return game;
+    return game; // Game instance with unique id
   }
 
   /** Join an existing game */
   joinGame(dto: JoinGameDTO): Game {
     const game = Persistence.getGame(dto.gameId);
     if (!game) throw new Error("Game not found");
-    const player = new Player(dto.playerId, dto.name);
+    if (game.players.length >= 4) throw new Error("Game is full");
+
+    // Automatically assign color if not provided
+    const color = dto.color || assignColor(game);
+
+    // Create player and 4 tokens
+    const player = new Player(dto.playerId, dto.name, color);
+    player.tokens = Array.from({ length: 4 }).map(() => new Token(generateId("token_")));
+
     game.players.push(player);
+
     Persistence.saveGame(game);
     return game;
   }
@@ -35,7 +49,7 @@ export class GameService {
     const game = Persistence.getGame(gameId);
     if (!game) throw new Error("Game not found");
     if (game.players.length < 2) throw new Error("Need at least 2 players");
-    game.status = "IN_PROGRESS";
+    game.status = GameStatus.IN_PROGRESS;
     return game;
   }
 
@@ -71,7 +85,7 @@ export class GameService {
 
     // Check win condition
     if (player.tokens.every((t) => t.isFinished)) {
-      game.status = "FINISHED";
+      game.status = GameStatus.FINISHED;
       game.winnerId = player.id;
     } else {
       // Advance turn unless rolled a 6

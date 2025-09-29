@@ -1,6 +1,6 @@
+import * as crypto from "crypto";
 
-export class IdGenerator {
-  static generateId(): string {
-    return Math.random().toString(36).substring(2, 10);
-  }
+/** Generate a unique ID with optional prefix */
+export function generateId(prefix: string = ""): string {
+  return prefix + crypto.randomBytes(6).toString("hex");
 }
