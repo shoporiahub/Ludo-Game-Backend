@@ -18,10 +18,11 @@ export class GameService {
   private boardService = new BoardService();
 
   /** Create a new game */
-  async createGame(dto: CreateGameDTO) {
-    const game = await GameRepository.create(dto.createdBy, dto.maxPlayers);
-    return game;
-  }
+ async createGame(dto: CreateGameDTO) {
+  const game = await GameRepository.create(dto.createdBy, dto.maxPlayers);
+  return GameRepository.findById(game.id); // ensures it includes id, players, tokens
+}
+
 
   /** Join an existing game */
   async joinGame(dto: JoinGameDTO) {

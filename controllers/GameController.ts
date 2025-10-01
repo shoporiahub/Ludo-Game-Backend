@@ -1,60 +1,49 @@
-import { GameService } from "../services/GameService";
 import { CreateGameDTO } from "../dto/CreateGameDTO";
 import { JoinGameDTO } from "../dto/JoinGameDTO";
 import { RollDiceDTO } from "../dto/RollDiceDTO";
 import { MoveTokenDTO } from "../dto/MoveTokenDTO";
-import { Game } from "../models/Game";
+import { GameService } from "../services/GameService";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+// Game type
+type PrismaGame = Awaited<ReturnType<typeof prisma.game.findUnique>>;
+
 
 export class GameController {
   private gameService = new GameService();
 
   /** Create a new game */
-  async createGame(dto: CreateGameDTO): Promise<Game | { error: string }> {
-    try {
-      const game = await this.gameService.createGame(dto);
-      return game;
-    } catch (err: any) {
-      return { error: err.message || "Failed to create game" };
-    }
+  async createGame(dto: CreateGameDTO): Promise<PrismaGame> {
+    const game = await this.gameService.createGame(dto);
+    if (!game) throw new Error("Failed to create game");
+    return game;
   }
 
   /** Join an existing game */
-  async joinGame(dto: JoinGameDTO): Promise<Game | { error: string }> {
-    try {
-      const game = await this.gameService.joinGame(dto);
-      return game;
-    } catch (err: any) {
-      return { error: err.message || "Failed to join game" };
-    }
+  async joinGame(dto: JoinGameDTO): Promise<PrismaGame> {
+    const game = await this.gameService.joinGame(dto);
+    if (!game) throw new Error("Failed to join game");
+    return game;
   }
 
-  /** Roll dice for current player */
-  async rollDice(dto: RollDiceDTO): Promise<{ success: boolean; value?: number; error?: string }> {
-    try {
-      const value = await this.gameService.rollDice(dto);
-      return { success: true, value };
-    } catch (err: any) {
-      return { success: false, error: err.message || "Failed to roll dice" };
-    }
+  /** Roll dice for a player */
+  async rollDice(dto: RollDiceDTO): Promise<number> {
+    const value = await this.gameService.rollDice(dto);
+    return value;
   }
 
   /** Move a token */
-  async moveToken(dto: MoveTokenDTO): Promise<{ success: boolean; game?: Game; error?: string }> {
-    try {
-      const game = await this.gameService.moveToken(dto);
-      return { success: true, game };
-    } catch (err: any) {
-      return { success: false, error: err.message || "Failed to move token" };
-    }
+  async moveToken(dto: MoveTokenDTO): Promise<PrismaGame> {
+    const game = await this.gameService.moveToken(dto);
+    return game;
   }
 
-  /** Get current game state */
-  async getGame(gameId: string): Promise<Game | { error: string }> {
-    try {
-      const game = await this.gameService.getGame(gameId);
-      return game;
-    } catch (err: any) {
-      return { error: err.message || "Game not found" };
-    }
+  /** Get game state */
+  async getGame(gameId: string): Promise<PrismaGame> {
+    const game = await this.gameService.getGame(gameId);
+    if (!game) throw new Error("Game not found");
+    return game;
   }
 }

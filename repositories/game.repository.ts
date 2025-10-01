@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -9,7 +9,6 @@ export const GameRepository = {
         createdBy,
         maxPlayers,
         status: "WAITING",
-        currentTurnIndex: 0,
       },
     });
   },
@@ -27,14 +26,10 @@ export const GameRepository = {
   updateWinner: async (gameId: string, winnerId: string) => {
     return prisma.game.update({
       where: { id: gameId },
-      data: { winnerId, status: "FINISHED" },
-    });
-  },
-
-  updateCurrentTurn: async (gameId: string, turnIndex: number) => {
-    return prisma.game.update({
-      where: { id: gameId },
-      data: { currentTurnIndex: turnIndex },
+      data: {
+        winnerId,
+        status: "FINISHED",
+      },
     });
   },
 };
