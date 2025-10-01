@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-
 const prisma = new PrismaClient();
 
 export const GamePlayerRepository = {
@@ -12,6 +11,14 @@ export const GamePlayerRepository = {
   findByGameId: async (gameId: string) => {
     return prisma.gamePlayer.findMany({
       where: { gameId },
+      include: { player: true }, // include Player details
+    });
+  },
+
+  findByPlayerId: async (playerId: string) => {
+    return prisma.gamePlayer.findMany({
+      where: { playerId },
+      include: { game: true },
     });
   },
 };

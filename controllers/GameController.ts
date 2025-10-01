@@ -9,9 +9,9 @@ export class GameController {
   private gameService = new GameService();
 
   /** Create a new game */
-  createGame(dto: CreateGameDTO): Game | { error: string } {
+  async createGame(dto: CreateGameDTO): Promise<Game | { error: string }> {
     try {
-      const game: Game = this.gameService.createGame(dto);
+      const game = await this.gameService.createGame(dto);
       return game;
     } catch (err: any) {
       return { error: err.message || "Failed to create game" };
@@ -19,29 +19,19 @@ export class GameController {
   }
 
   /** Join an existing game */
-  joinGame(dto: JoinGameDTO): Game | { error: string } {
+  async joinGame(dto: JoinGameDTO): Promise<Game | { error: string }> {
     try {
-      const game: Game = this.gameService.joinGame(dto);
+      const game = await this.gameService.joinGame(dto);
       return game;
     } catch (err: any) {
       return { error: err.message || "Failed to join game" };
     }
   }
 
-  /** Start a game once enough players have joined */
-  startGame(dto: { gameId: string }): Game | { error: string } {
-    try {
-      const game: Game = this.gameService.startGame(dto.gameId);
-      return game;
-    } catch (err: any) {
-      return { error: err.message || "Failed to start game" };
-    }
-  }
-
   /** Roll dice for current player */
-  rollDice(dto: RollDiceDTO): { success: boolean; value?: number; error?: string } {
+  async rollDice(dto: RollDiceDTO): Promise<{ success: boolean; value?: number; error?: string }> {
     try {
-      const value = this.gameService.rollDice(dto);
+      const value = await this.gameService.rollDice(dto);
       return { success: true, value };
     } catch (err: any) {
       return { success: false, error: err.message || "Failed to roll dice" };
@@ -49,9 +39,9 @@ export class GameController {
   }
 
   /** Move a token */
-  moveToken(dto: MoveTokenDTO): { success: boolean; game?: Game; error?: string } {
+  async moveToken(dto: MoveTokenDTO): Promise<{ success: boolean; game?: Game; error?: string }> {
     try {
-      const game: Game = this.gameService.moveToken(dto);
+      const game = await this.gameService.moveToken(dto);
       return { success: true, game };
     } catch (err: any) {
       return { success: false, error: err.message || "Failed to move token" };
@@ -59,9 +49,9 @@ export class GameController {
   }
 
   /** Get current game state */
-  getGame(gameId: string): Game | { error: string } {
+  async getGame(gameId: string): Promise<Game | { error: string }> {
     try {
-      const game: Game = this.gameService.getGame(gameId);
+      const game = await this.gameService.getGame(gameId);
       return game;
     } catch (err: any) {
       return { error: err.message || "Game not found" };
